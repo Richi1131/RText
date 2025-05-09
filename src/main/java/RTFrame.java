@@ -6,13 +6,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class RTFrame extends JFrame {
+    private JScrollPane scrollPane;
     private JTextArea textArea;
     private JMenuBar menuBar;
 
     private String currentPath;
 
     public RTFrame() {
-        textArea = new JTextArea();
+        this.setTitle("~ untitled");
+
+        textArea = new JTextArea(10,30);
+        
+        scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(this.getSize());
 
         menuBar = new JMenuBar();
         menuBar.add(new JMenu("File"));
@@ -21,7 +27,7 @@ public class RTFrame extends JFrame {
         menuBar.getMenu(0).add("Save").addActionListener(e -> fileMenuSave());
         menuBar.getMenu(0).add("Save As").addActionListener(e -> fileMenuSaveAs());
 
-        this.add(textArea);
+        this.add(scrollPane);
         this.add(menuBar, BorderLayout.NORTH);
         this.setSize(1200, 800);
 
@@ -37,6 +43,7 @@ public class RTFrame extends JFrame {
         fc.showDialog(this, "Open");
         try (FileReader fr = new FileReader(fc.getSelectedFile())) {
             textArea.read(fr, "");
+            this.setTitle(fc.getSelectedFile().getName());
             currentPath = fc.getSelectedFile().getAbsolutePath();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -57,6 +64,7 @@ public class RTFrame extends JFrame {
     public void fileMenuSaveAs() {
         JFileChooser fc = new JFileChooser();
         fc.showDialog(this, "Save As");
+        this.setTitle(fc.getSelectedFile().getName());
         currentPath = fc.getSelectedFile().getAbsolutePath();
         fileMenuSave();
     }
