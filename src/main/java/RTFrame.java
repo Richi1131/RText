@@ -16,22 +16,23 @@ public class RTFrame extends JFrame {
 
         menuBar = new JMenuBar();
         menuBar.add(new JMenu("File"));
-        menuBar.getMenu(0).add("New");
-        menuBar.getMenu(0).add("Open");
-        menuBar.getMenu(0).add("Save");
-        menuBar.getMenu(0).add("Save As");
-
-        menuBar.getMenu(0).getItem(1).addActionListener(e->open());
-        menuBar.getMenu(0).getItem(2).addActionListener(e->save());
-        menuBar.getMenu(0).getItem(3).addActionListener(e->saveAs());
+        menuBar.getMenu(0).add("New").addActionListener(e -> fileMenuNew());
+        menuBar.getMenu(0).add("Open").addActionListener(e -> fileMenuOpen());
+        menuBar.getMenu(0).add("Save").addActionListener(e -> fileMenuSave());
+        menuBar.getMenu(0).add("Save As").addActionListener(e -> fileMenuSaveAs());
 
         this.add(textArea);
         this.add(menuBar, BorderLayout.NORTH);
         this.setSize(1200, 800);
 
     }
+    public void fileMenuNew() {
+        textArea.setText("");
+        currentPath = null;
+    }
 
-    public void open() {
+    public void fileMenuOpen() {
+        // todo handle cancel button press
         JFileChooser fc = new JFileChooser();
         fc.showDialog(this, "Open");
         try (FileReader fr = new FileReader(fc.getSelectedFile())) {
@@ -41,9 +42,9 @@ public class RTFrame extends JFrame {
             throw new RuntimeException(e);
         }
     }
-    public void save() {
+    public void fileMenuSave() {
         if (currentPath == null) {
-            saveAs();
+            fileMenuSaveAs();
             return;
         }
         File file = new File(currentPath);
@@ -53,10 +54,10 @@ public class RTFrame extends JFrame {
             throw new RuntimeException(e);
         }
     }
-    public void saveAs() {
+    public void fileMenuSaveAs() {
         JFileChooser fc = new JFileChooser();
         fc.showDialog(this, "Save As");
         currentPath = fc.getSelectedFile().getAbsolutePath();
-        save();
+        fileMenuSave();
     }
 }
