@@ -12,8 +12,11 @@ public class RTFrame extends JFrame {
     private JScrollPane scrollPane;
     private JTextArea textArea;
     private JMenuBar menuBar;
+    private JLabel infoLabel;
 
     private String currentPath;
+
+    private Thread uiUpdateThread;
 
     public RTFrame() {
         this.setTitle("~ untitled");
@@ -69,6 +72,13 @@ public class RTFrame extends JFrame {
 
         this.add(scrollPane);
         this.add(menuBar, BorderLayout.NORTH);
+
+        infoLabel = new JLabel();
+        this.add(infoLabel, BorderLayout.SOUTH);
+
+        uiUpdateThread = new Thread(this::uiUpdateLoop);
+        uiUpdateThread.start();
+
         this.setSize(1200, 800);
 
     }
@@ -107,5 +117,22 @@ public class RTFrame extends JFrame {
         this.setTitle(fc.getSelectedFile().getName());
         currentPath = fc.getSelectedFile().getAbsolutePath();
         fileMenuSave();
+    }
+
+    public void uiUpdateLoop() {
+        while (true) {
+            try {
+                Thread.sleep(100);
+                updateInfoLabel();
+            } catch (InterruptedException e) {
+
+            }
+
+        }
+    }
+
+    private void updateInfoLabel() {
+        int wordCount = textArea.getText().trim().split("\\s+").length;
+        infoLabel.setText(textArea.getLineCount() + " Lines    " + wordCount + " Words");
     }
 }
