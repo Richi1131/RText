@@ -29,7 +29,7 @@ public class RTFrame extends JFrame {
         final CompoundEdit[] compoundEdit = {new CompoundEdit()};
         final CompoundEdit[] lastEdit = {null};
         textArea.getDocument().addUndoableEditListener(e -> {
-            String insertedText = "";
+            String insertedText = ""; // bad naming -> might be deleted text
             if (e.getEdit() instanceof AbstractDocument.DefaultDocumentEvent event) {
                 try {
                     int offset = event.getOffset();
@@ -38,11 +38,11 @@ public class RTFrame extends JFrame {
                 } catch (BadLocationException ex) {
                     ex.printStackTrace();
                 }
-                compoundEdit[0].addEdit(e.getEdit());
                 if (insertedText.length() != 1 || !Character.isLetter(insertedText.charAt(0))) {
                     compoundEdit[0].end();
                     compoundEdit[0] = new CompoundEdit();
                 }
+                compoundEdit[0].addEdit(e.getEdit());
                 if (compoundEdit[0] != lastEdit[0]) {
                     undoManager.addEdit(compoundEdit[0]);
                     lastEdit[0] = compoundEdit[0];
