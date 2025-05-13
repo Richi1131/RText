@@ -1,4 +1,7 @@
 import javax.swing.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.BadLocationException;
+import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -23,7 +26,29 @@ public class RTFrame extends JFrame {
 
         textArea = new JTextArea();
         UndoManager undoManager = new UndoManager();
-        textArea.getDocument().addUndoableEditListener(undoManager);
+        final CompoundEdit[] compoundEdit = {new CompoundEdit()};
+        final CompoundEdit[] lastEdit = {null};
+        textArea.getDocument().addUndoableEditListener(e -> {
+            String insertedText = "";
+            if (e.getEdit() instanceof AbstractDocument.DefaultDocumentEvent event) {
+                try {
+                    int offset = event.getOffset();
+                    int length = event.getLength();
+                    insertedText = textArea.getDocument().getText(offset, length);
+                } catch (BadLocationException ex) {
+                    ex.printStackTrace();
+                }
+                compoundEdit[0].addEdit(e.getEdit());
+                if (insertedText.length() != 1 || !Character.isLetter(insertedText.charAt(0))) {
+                    compoundEdit[0].end();
+                    compoundEdit[0] = new CompoundEdit();
+                }
+                if (compoundEdit[0] != lastEdit[0]) {
+                    undoManager.addEdit(compoundEdit[0]);
+                    lastEdit[0] = compoundEdit[0];
+                }
+            }
+        });
 
         // todo move somewhere else, add buffer?
         InputMap inputMap = textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -34,6 +59,10 @@ public class RTFrame extends JFrame {
         actionMap.put("undoAction", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (!lastEdit[0].canUndo()) {
+                    lastEdit[0].end();
+                    compoundEdit[0] = new CompoundEdit();
+                }
                 if (undoManager.canUndo()) {
                     undoManager.undo();
                 }
