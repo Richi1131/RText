@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -12,6 +14,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class RTFrame extends JFrame {
+    private JScrollPane sideBar;
+    private JPanel sideBarPanel;
+    private List<JComponent> sideBarComponents = new ArrayList<>();
     private JScrollPane scrollPane;
     private JTextArea textArea;
     private JMenuBar menuBar;
@@ -99,6 +104,18 @@ public class RTFrame extends JFrame {
         menuBar.getMenu(0).add("Save").addActionListener(e -> fileMenuSave());
         menuBar.getMenu(0).add("Save As").addActionListener(e -> fileMenuSaveAs());
 
+        menuBar.add(new JMenu("Side-Bar"));
+        menuBar.getMenu(1).add("Undo History").addActionListener(e -> fileMenuNew());
+        menuBar.getMenu(1).add("---");
+        menuBar.getMenu(1).add("---");
+        menuBar.getMenu(1).add("---");
+
+        sideBarPanel = new JPanel();
+        sideBarPanel.setLayout(new GridLayout(0, 1));
+        sideBar = new JScrollPane(sideBarPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        this.add(sideBar, BorderLayout.EAST);
+        updateSideBar();
+
         this.add(scrollPane);
         this.add(menuBar, BorderLayout.NORTH);
 
@@ -111,6 +128,22 @@ public class RTFrame extends JFrame {
         this.setSize(1200, 800);
 
     }
+
+    private void updateSideBar() {
+        sideBarPanel.removeAll();
+        for (JComponent sideBarComponent : sideBarComponents) {
+            sideBarPanel.add(sideBarComponent);
+        }
+        if (!sideBarComponents.isEmpty()) {
+            sideBar.setPreferredSize(new Dimension(
+                    sideBar.getVerticalScrollBar().getPreferredSize().width + sideBarPanel.getPreferredSize().width,
+                    sideBar.getPreferredSize().height));
+        } else {
+            sideBar.setPreferredSize(new Dimension(0, 0));
+        }
+
+    }
+
     public void fileMenuNew() {
         textArea.setText("");
         currentPath = null;
