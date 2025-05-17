@@ -36,11 +36,17 @@ public class RTFrame extends JFrame {
         menuBar.getMenu(0).add("Save").addActionListener(e -> fileMenuSave());
         menuBar.getMenu(0).add("Save As").addActionListener(e -> fileMenuSaveAs());
 
+        menuBar.add(new JMenu("Settings"));
+        menuBar.getMenu(1).add(new JCheckBoxMenuItem("Line Wrap")).addActionListener(e -> textArea.setLineWrap(!textArea.getLineWrap()));
+        menuBar.getMenu(1).add("---").addActionListener(e -> fileMenuOpen());
+        menuBar.getMenu(1).add("---").addActionListener(e -> fileMenuSave());
+        menuBar.getMenu(1).add("---").addActionListener(e -> fileMenuSaveAs());
+
         menuBar.add(new JMenu("Side-Bar"));
-        menuBar.getMenu(1).add(new JCheckBoxMenuItem("Edit History")).addActionListener(e -> toggleSideBarElement(e, EditHistory.class));
-        menuBar.getMenu(1).add(new JCheckBoxMenuItem("---"));
-        menuBar.getMenu(1).add(new JCheckBoxMenuItem("---"));
-        menuBar.getMenu(1).add(new JCheckBoxMenuItem("---"));
+        menuBar.getMenu(2).add(new JCheckBoxMenuItem("Edit History")).addActionListener(e -> toggleSideBarElement(e, EditHistory.class));
+        menuBar.getMenu(2).add(new JCheckBoxMenuItem("---"));
+        menuBar.getMenu(2).add(new JCheckBoxMenuItem("---"));
+        menuBar.getMenu(2).add(new JCheckBoxMenuItem("---"));
 
         // ----- initialise side bar -----
         sideBarPanel = new JPanel();
@@ -53,6 +59,7 @@ public class RTFrame extends JFrame {
         infoLabel = new JLabel();
         bottomBar.add(infoLabel);
         bottomBar.add(new ZoomControl(textArea));
+        //bottomBar.setPreferredSize(new Dimension(this.getWidth(), 30));
 
         // ----- add elements -----
         this.add(sideBar, BorderLayout.EAST);

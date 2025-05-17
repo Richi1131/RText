@@ -16,9 +16,11 @@ public class ZoomControl extends JPanel {
         increaseZoomButton = new JButton("+");
         increaseZoomButton.setPreferredSize(new Dimension(20, 20));
         increaseZoomButton.addActionListener(e->this.increaseZoom());
+        increaseZoomButton.setMargin(null);
         decreaseZoomButton = new JButton("-");
         decreaseZoomButton.setPreferredSize(new Dimension(20, 20));
         decreaseZoomButton.addActionListener(e->this.decreaseZoom());
+        decreaseZoomButton.setMargin(null);
 
         // Create a NumberFormatter for numeric input
         NumberFormat numberFormat = NumberFormat.getIntegerInstance();
@@ -41,6 +43,7 @@ public class ZoomControl extends JPanel {
             }
         });
         zoomTextField.setPreferredSize(new Dimension(45, 20));
+        zoomTextField.setMargin(null);
         this.add(decreaseZoomButton);
         this.add(zoomTextField);
         this.add(increaseZoomButton);
