@@ -1,40 +1,64 @@
 import javax.swing.*;
+import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.text.NumberFormat;
 
 public class ZoomControl extends JPanel {
     private JButton increaseZoomButton;
     private JButton decreaseZoomButton;
-    private JLabel infoLabel;
+    private JFormattedTextField zoomTextField;
     private RTextArea textArea;
     private int zoomLevel = 100;
-    private final int DEFAULT_FONT_SIZE = 16;
+    private final int DEFAULT_FONT_SIZE = new RTextArea().getFont().getSize();
     public ZoomControl(RTextArea textArea) {
         this.textArea = textArea;
-        this.setLayout(new GridLayout(1, 3));
+        this.setLayout(new FlowLayout());
         increaseZoomButton = new JButton("+");
         increaseZoomButton.setPreferredSize(new Dimension(20, 20));
         increaseZoomButton.addActionListener(e->this.increaseZoom());
         decreaseZoomButton = new JButton("-");
         decreaseZoomButton.setPreferredSize(new Dimension(20, 20));
         decreaseZoomButton.addActionListener(e->this.decreaseZoom());
-        infoLabel = new JLabel();
+
+        // Create a NumberFormatter for numeric input
+        NumberFormat numberFormat = NumberFormat.getIntegerInstance();
+        numberFormat.setGroupingUsed(false);
+        NumberFormatter numberFormatter = new NumberFormatter(numberFormat);
+        numberFormatter.setValueClass(Integer.class);
+        numberFormatter.setAllowsInvalid(false); // Prevent invalid input
+        numberFormatter.setCommitsOnValidEdit(true); // Commit on valid edit
+
+        zoomTextField = new JFormattedTextField(numberFormatter);
+        zoomTextField.addActionListener(e-> {
+            if (e.getSource() instanceof JTextField jtf) {
+                setZoomLevel(Integer.parseInt(jtf.getText()));
+            }
+        });
+        zoomTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                zoomTextField.postActionEvent(); // Trigger action event
+            }
+        });
+        zoomTextField.setPreferredSize(new Dimension(45, 20));
         this.add(decreaseZoomButton);
-        this.add(infoLabel);
+        this.add(zoomTextField);
         this.add(increaseZoomButton);
-        updateInfoLabel();
+        updateZoomTextField();
     }
     private void increaseZoom() {
-        zoomLevel += 10;
-        this.textArea.setFontSize((int) (zoomLevel/100.0*DEFAULT_FONT_SIZE));
-        updateInfoLabel();
+        setZoomLevel(zoomLevel + 10);
     }
     private void decreaseZoom() {
-        zoomLevel -= 10;
+        setZoomLevel(zoomLevel - 10);
+    }
+    private void setZoomLevel(int zoom){
+        zoomLevel = zoom;
         zoomLevel = Math.max(zoomLevel, 0);
         this.textArea.setFontSize((int) (zoomLevel/100.0*DEFAULT_FONT_SIZE));
-        updateInfoLabel();
+        updateZoomTextField();
     }
-    private void updateInfoLabel(){
-        infoLabel.setText(""+zoomLevel);
+    private void updateZoomTextField(){
+        zoomTextField.setText(""+zoomLevel);
     }
 }

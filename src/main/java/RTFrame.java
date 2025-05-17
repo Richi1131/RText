@@ -1,13 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.BadLocationException;
-import javax.swing.undo.CompoundEdit;
-import javax.swing.undo.UndoManager;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -53,15 +48,16 @@ public class RTFrame extends JFrame {
         sideBar = new JScrollPane(sideBarPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         updateSideBar();
 
-        // ----- add elements -----
-        this.add(sideBar, BorderLayout.EAST);
-        this.add(scrollPane);
-        this.add(menuBar, BorderLayout.NORTH);
-
+        // ----- initialize bottom bar -----
         bottomBar = new JPanel();
         infoLabel = new JLabel();
         bottomBar.add(infoLabel);
         bottomBar.add(new ZoomControl(textArea));
+
+        // ----- add elements -----
+        this.add(sideBar, BorderLayout.EAST);
+        this.add(scrollPane);
+        this.add(menuBar, BorderLayout.NORTH);
         this.add(bottomBar, BorderLayout.SOUTH);
 
         uiUpdateThread = new Thread(this::uiUpdateLoop);
