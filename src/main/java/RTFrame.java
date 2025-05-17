@@ -19,7 +19,7 @@ public class RTFrame extends JFrame {
     private JPanel bottomBar;
     private List<JComponent> sideBarComponents = new ArrayList<>();
     private JScrollPane scrollPane;
-    private JTextArea textArea;
+    private RTextArea textArea;
     private JMenuBar menuBar;
     private JLabel infoLabel;
 
@@ -30,71 +30,7 @@ public class RTFrame extends JFrame {
     public RTFrame() {
         this.setTitle("~ untitled");
 
-        // ----- initialize text area -----
-        textArea = new JTextArea();
-        UndoManager undoManager = new UndoManager();
-        final CompoundEdit[] compoundEdit = {new CompoundEdit()};
-        final CompoundEdit[] lastEdit = {null};
-        textArea.getDocument().addUndoableEditListener(e -> {
-            String insertedText = ""; // bad naming -> might be deleted text
-            if (e.getEdit() instanceof AbstractDocument.DefaultDocumentEvent event) {
-                try {
-                    int offset = event.getOffset();
-                    int length = event.getLength();
-                    insertedText = textArea.getDocument().getText(offset, length);
-                } catch (BadLocationException ex) {
-                    ex.printStackTrace();
-                }
-                if (insertedText.length() != 1 || !Character.isLetter(insertedText.charAt(0))) {
-                    compoundEdit[0].end();
-                    compoundEdit[0] = new CompoundEdit();
-                }
-                compoundEdit[0].addEdit(e.getEdit());
-                if (compoundEdit[0] != lastEdit[0]) {
-                    undoManager.addEdit(compoundEdit[0]);
-                    lastEdit[0] = compoundEdit[0];
-                }
-            }
-        });
-        InputMap inputMap = textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        int menuShortcutKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
-        KeyStroke undoKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_Z, menuShortcutKey);
-        inputMap.put(undoKeyStroke, "undoAction");
-        ActionMap actionMap = textArea.getActionMap();
-        actionMap.put("undoAction", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!lastEdit[0].canUndo()) {
-                    lastEdit[0].end();
-                    compoundEdit[0] = new CompoundEdit();
-                }
-                if (undoManager.canUndo()) {
-                    undoManager.undo();
-                }
-            }
-
-            @Override
-            public boolean accept(Object sender) {
-                return super.accept(sender);
-            }
-        });
-
-        KeyStroke redoKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_Y, menuShortcutKey);
-        inputMap.put(redoKeyStroke, "redoAction");
-        actionMap.put("redoAction", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (undoManager.canRedo()) {
-                    undoManager.redo();
-                }
-            }
-
-            @Override
-            public boolean accept(Object sender) {
-                return super.accept(sender);
-            }
-        });
-
+        textArea = new RTextArea();
         scrollPane = new JScrollPane(textArea);
 
         // ----- initialise menu bar -----
