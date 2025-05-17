@@ -16,6 +16,7 @@ import java.io.IOException;
 public class RTFrame extends JFrame {
     private JScrollPane sideBar;
     private JPanel sideBarPanel;
+    private JPanel bottomBar;
     private List<JComponent> sideBarComponents = new ArrayList<>();
     private JScrollPane scrollPane;
     private JTextArea textArea;
@@ -120,8 +121,12 @@ public class RTFrame extends JFrame {
         this.add(sideBar, BorderLayout.EAST);
         this.add(scrollPane);
         this.add(menuBar, BorderLayout.NORTH);
+
+        bottomBar = new JPanel();
         infoLabel = new JLabel();
-        this.add(infoLabel, BorderLayout.SOUTH);
+        bottomBar.add(infoLabel);
+        bottomBar.add(new ZoomControl(textArea));
+        this.add(bottomBar, BorderLayout.SOUTH);
 
         uiUpdateThread = new Thread(this::uiUpdateLoop);
         uiUpdateThread.start();
