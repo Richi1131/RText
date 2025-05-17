@@ -29,6 +29,7 @@ public class RTFrame extends JFrame {
     public RTFrame() {
         this.setTitle("~ untitled");
 
+        // ----- initialize text area -----
         textArea = new JTextArea();
         UndoManager undoManager = new UndoManager();
         final CompoundEdit[] compoundEdit = {new CompoundEdit()};
@@ -54,8 +55,6 @@ public class RTFrame extends JFrame {
                 }
             }
         });
-
-        // todo move somewhere else, add buffer?
         InputMap inputMap = textArea.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         int menuShortcutKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
         KeyStroke undoKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_Z, menuShortcutKey);
@@ -97,6 +96,7 @@ public class RTFrame extends JFrame {
 
         scrollPane = new JScrollPane(textArea);
 
+        // ----- initialise menu bar -----
         menuBar = new JMenuBar();
         menuBar.add(new JMenu("File"));
         menuBar.getMenu(0).add("New").addActionListener(e -> fileMenuNew());
@@ -105,20 +105,21 @@ public class RTFrame extends JFrame {
         menuBar.getMenu(0).add("Save As").addActionListener(e -> fileMenuSaveAs());
 
         menuBar.add(new JMenu("Side-Bar"));
-        menuBar.getMenu(1).add("Undo History").addActionListener(e -> fileMenuNew());
-        menuBar.getMenu(1).add("---");
-        menuBar.getMenu(1).add("---");
-        menuBar.getMenu(1).add("---");
+        menuBar.getMenu(1).add(new JCheckBoxMenuItem("Edit History")).addActionListener(e -> toggleSideBarElement(e, EditHistory.class));
+        menuBar.getMenu(1).add(new JCheckBoxMenuItem("---"));
+        menuBar.getMenu(1).add(new JCheckBoxMenuItem("---"));
+        menuBar.getMenu(1).add(new JCheckBoxMenuItem("---"));
 
+        // ----- initialise side bar -----
         sideBarPanel = new JPanel();
         sideBarPanel.setLayout(new GridLayout(0, 1));
         sideBar = new JScrollPane(sideBarPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        this.add(sideBar, BorderLayout.EAST);
         updateSideBar();
 
+        // ----- add elements -----
+        this.add(sideBar, BorderLayout.EAST);
         this.add(scrollPane);
         this.add(menuBar, BorderLayout.NORTH);
-
         infoLabel = new JLabel();
         this.add(infoLabel, BorderLayout.SOUTH);
 
@@ -137,10 +138,11 @@ public class RTFrame extends JFrame {
         if (!sideBarComponents.isEmpty()) {
             sideBar.setPreferredSize(new Dimension(
                     sideBar.getVerticalScrollBar().getPreferredSize().width + sideBarPanel.getPreferredSize().width,
-                    sideBar.getPreferredSize().height));
+                    this.getHeight()));
         } else {
             sideBar.setPreferredSize(new Dimension(0, 0));
         }
+        this.revalidate();
 
     }
 
@@ -192,9 +194,25 @@ public class RTFrame extends JFrame {
 
         }
     }
+    private <T extends JComponent> void toggleSideBarElement(ActionEvent ae, Class<T> clazz) {
+        if (ae.getSource() instanceof JCheckBoxMenuItem cbmi) {
+            if (cbmi.isSelected()) {
+                try {
+                    sideBarComponents.add(clazz.getDeclaredConstructor().newInstance());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            } else {
+                List<JComponent> componentsToRemove = sideBarComponents.stream().filter(clazz::isInstance).toList();
+                sideBarComponents.removeAll(componentsToRemove);
+            }
+        }
+        updateSideBar();
+    }
 
     private void updateInfoLabel() {
         int wordCount = textArea.getText().trim().split("\\s+").length;
         infoLabel.setText(textArea.getLineCount() + " Lines    " + wordCount + " Words");
     }
+
 }
