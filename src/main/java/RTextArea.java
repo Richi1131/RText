@@ -72,4 +72,7 @@ public class RTextArea extends JTextArea {
             }
         });
     }
+    public void setFontSize(int fontSize) {
+        this.setFont(new Font("Monospaced", Font.PLAIN, fontSize));
+    }
 }
