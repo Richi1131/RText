@@ -15,7 +15,7 @@ public class RTextArea extends JTextArea {
         UndoManager undoManager = new UndoManager();
         final CompoundEdit[] compoundEdit = {new CompoundEdit()};
         final CompoundEdit[] lastEdit = {null};
-        this.getDocument().addUndoableEditListener(e -> {
+        this.getDocument().addUndoableEditListener(e -> SwingUtilities.invokeLater(() -> {
             String insertedText = ""; // bad naming -> might be deleted text
             if (e.getEdit() instanceof AbstractDocument.DefaultDocumentEvent event) {
                 try {
@@ -35,7 +35,7 @@ public class RTextArea extends JTextArea {
                     lastEdit[0] = compoundEdit[0];
                 }
             }
-        });
+        }));
         InputMap inputMap = this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         int menuShortcutKey = Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
         KeyStroke undoKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_Z, menuShortcutKey);
@@ -110,5 +110,21 @@ public class RTextArea extends JTextArea {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void replaceString(String oldString, String newString) {
+        String text = this.getText();
+        String newText = text.replace(oldString, newString);
+        int index = text.indexOf(oldString);
+        /*while (index >= 0) {
+            try {
+                text.rep(newString, this.ind);
+                index = text.indexOf(newString, index + newString.length());
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }*/
+        try {
+        this.setText(newText);} catch (Exception e) {e.printStackTrace();}
+        this.highlightString(newString, Color.GREEN); //todo currently highlights occurrences that were there before
     }
 }

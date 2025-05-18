@@ -20,6 +20,7 @@ public class SearchPanel extends JPanel {
         replaceButton = new JButton("replace");
 
         findButton.addActionListener(e -> textArea.highlightString(findTextField.getText(), Color.YELLOW));
+        replaceButton.addActionListener(e -> textArea.replaceString(findTextField.getText(), replaceTextField.getText()));
 
         findTextField.setPreferredSize(new Dimension(110, 36));
         replaceTextField.setPreferredSize(new Dimension(110, 36));
