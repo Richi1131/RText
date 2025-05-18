@@ -58,7 +58,7 @@ public class RTFrame extends JFrame {
         menuBar.getMenu(2).add(new JCheckBoxMenuItem("---"));
 
         // ----- initialise left side bar -----
-        fileTree = new FileTree(new File(""));
+        fileTree = new FileTree(this, new File(""));
         leftSideBar = new JScrollPane(fileTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         leftSideBar.setPreferredSize(new Dimension(200, this.getHeight()));
         leftSideBar.setVisible(false);
@@ -130,15 +130,21 @@ public class RTFrame extends JFrame {
         // todo handle cancel button press
         JFileChooser fc = new JFileChooser();
         fc.showDialog(this, "Open");
-        try (FileReader fr = new FileReader(fc.getSelectedFile())) {
+        File selectedFile = fc.getSelectedFile();
+        loadFile(selectedFile);
+    }
+
+    public void loadFile(File selectedFile) {
+        try (FileReader fr = new FileReader(selectedFile)) {
             textArea.read(fr, "");
-            this.setTitle(fc.getSelectedFile().getName());
-            currentPath = fc.getSelectedFile().getAbsolutePath();
+            this.setTitle(selectedFile.getName());
+            currentPath = selectedFile.getAbsolutePath();
             updateSaveLabel(false);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
     public void fileMenuSave() {
         if (currentPath == null) {
             fileMenuSaveAs();
