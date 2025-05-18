@@ -1,6 +1,8 @@
 import javax.swing.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import java.awt.*;
@@ -88,5 +90,25 @@ public class RTextArea extends JTextArea {
     }
     public void setFontSize(int fontSize) {
         this.setFont(new Font("Monospaced", Font.PLAIN, fontSize));
+    }
+
+    public void highlightString(String string, Color color) {
+        this.getHighlighter().removeAllHighlights();
+        if (string.isEmpty()){
+            return;
+        }
+
+        Highlighter.HighlightPainter painter = new DefaultHighlighter.DefaultHighlightPainter(color);
+
+        String text = this.getText();
+        int index = text.indexOf(string);
+        while (index >= 0) {
+            try {
+                this.getHighlighter().addHighlight(index, index + string.length(), painter);
+                index = text.indexOf(string, index + string.length());
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

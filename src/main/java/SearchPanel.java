@@ -5,10 +5,10 @@ public class SearchPanel extends JPanel {
     JTextField findTextField;
     JButton findButton;
     JTextField replaceTextField;
-    JTextArea textArea;
+    RTextArea textArea;
     JButton replaceButton;
 
-    public SearchPanel(JTextArea textArea) {
+    public SearchPanel(RTextArea textArea) {
         this.textArea = textArea;
         this.setLayout(new FlowLayout());
         this.setPreferredSize(new Dimension(180, 80));
@@ -18,6 +18,8 @@ public class SearchPanel extends JPanel {
         findButton = new JButton("find");
         replaceTextField = new JTextField();
         replaceButton = new JButton("replace");
+
+        findButton.addActionListener(e -> textArea.highlightString(findTextField.getText(), Color.YELLOW));
 
         findTextField.setPreferredSize(new Dimension(110, 36));
         replaceTextField.setPreferredSize(new Dimension(110, 36));
