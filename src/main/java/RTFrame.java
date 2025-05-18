@@ -24,6 +24,7 @@ public class RTFrame extends JFrame {
 
     public RTFrame() {
         this.setTitle("~ untitled");
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         textArea = new RTextArea();
         scrollPane = new JScrollPane(textArea);
@@ -43,6 +44,7 @@ public class RTFrame extends JFrame {
         menuBar.getMenu(1).add("---").addActionListener(e -> fileMenuSaveAs());
 
         menuBar.add(new JMenu("Side-Bar"));
+        menuBar.getMenu(2).add(new JCheckBoxMenuItem("Search and Replace")).addActionListener(e -> toggleSideBarElement(e, textArea.searchPanel));
         menuBar.getMenu(2).add(new JCheckBoxMenuItem("Edit History")).addActionListener(e -> toggleSideBarElement(e, EditHistory.class));
         menuBar.getMenu(2).add(new JCheckBoxMenuItem("---"));
         menuBar.getMenu(2).add(new JCheckBoxMenuItem("---"));
@@ -50,7 +52,7 @@ public class RTFrame extends JFrame {
 
         // ----- initialise side bar -----
         sideBarPanel = new JPanel();
-        sideBarPanel.setLayout(new GridLayout(0, 1));
+        sideBarPanel.setLayout(new BoxLayout(sideBarPanel, BoxLayout.Y_AXIS));
         sideBar = new JScrollPane(sideBarPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         updateSideBar();
 
@@ -80,9 +82,7 @@ public class RTFrame extends JFrame {
             sideBarPanel.add(sideBarComponent);
         }
         if (!sideBarComponents.isEmpty()) {
-            sideBar.setPreferredSize(new Dimension(
-                    sideBar.getVerticalScrollBar().getPreferredSize().width + sideBarPanel.getPreferredSize().width,
-                    this.getHeight()));
+            sideBar.setPreferredSize(new Dimension(200, this.getHeight()));
         } else {
             sideBar.setPreferredSize(new Dimension(0, 0));
         }
@@ -138,7 +138,7 @@ public class RTFrame extends JFrame {
 
         }
     }
-    private <T extends JComponent> void toggleSideBarElement(ActionEvent ae, Class<T> clazz) {
+    public  <T extends JComponent> void toggleSideBarElement(ActionEvent ae, Class<T> clazz) {
         if (ae.getSource() instanceof JCheckBoxMenuItem cbmi) {
             if (cbmi.isSelected()) {
                 try {
@@ -149,6 +149,20 @@ public class RTFrame extends JFrame {
             } else {
                 List<JComponent> componentsToRemove = sideBarComponents.stream().filter(clazz::isInstance).toList();
                 sideBarComponents.removeAll(componentsToRemove);
+            }
+        }
+        updateSideBar();
+    }
+    public <T extends JComponent> void toggleSideBarElement(ActionEvent ae, T t) {
+        if (ae.getSource() instanceof JCheckBoxMenuItem cbmi) {
+            if (cbmi.isSelected()) {
+                try {
+                    sideBarComponents.add(t);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            } else {
+                sideBarComponents.remove(t);
             }
         }
         updateSideBar();

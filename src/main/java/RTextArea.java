@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 public class RTextArea extends JTextArea {
+    public SearchPanel searchPanel = new SearchPanel(this);
     public RTextArea() {
         UndoManager undoManager = new UndoManager();
         final CompoundEdit[] compoundEdit = {new CompoundEdit()};
@@ -64,6 +65,19 @@ public class RTextArea extends JTextArea {
                 if (undoManager.canRedo()) {
                     undoManager.redo();
                 }
+            }
+
+            @Override
+            public boolean accept(Object sender) {
+                return super.accept(sender);
+            }
+        });
+        KeyStroke searchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F, menuShortcutKey);
+        inputMap.put(searchKeyStroke, "searchAction");
+        actionMap.put("searchAction", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ((RTFrame) SwingUtilities.getWindowAncestor(RTextArea.this)).toggleSideBarElement(e, SearchPanel.class);
             }
 
             @Override
