@@ -115,16 +115,7 @@ public class RTextArea extends JTextArea {
     public void replaceString(String oldString, String newString) {
         String text = this.getText();
         String newText = text.replace(oldString, newString);
-        int index = text.indexOf(oldString);
-        /*while (index >= 0) {
-            try {
-                text.rep(newString, this.ind);
-                index = text.indexOf(newString, index + newString.length());
-            } catch (BadLocationException e) {
-                e.printStackTrace();
-            }*/
-        try {
-        this.setText(newText);} catch (Exception e) {e.printStackTrace();}
+        this.setText(newText);
         this.highlightString(newString, Color.GREEN); //todo currently highlights occurrences that were there before
     }
 }

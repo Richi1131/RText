@@ -1,6 +1,9 @@
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.tree.DefaultTreeModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -9,14 +12,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class RTFrame extends JFrame {
-    private JScrollPane sideBar;
-    private JPanel sideBarPanel;
+    private FileTree fileTree;
+    private JScrollPane leftSideBar;
+    private JScrollPane rightSideBar;
+    private JPanel rightSideBarPanel;
     private JPanel bottomBar;
     private List<JComponent> sideBarComponents = new ArrayList<>();
     private JScrollPane scrollPane;
     private RTextArea textArea;
     private JMenuBar menuBar;
     private JLabel infoLabel;
+    private JLabel saveLabel;
 
     private String currentPath;
 
@@ -34,12 +40,13 @@ public class RTFrame extends JFrame {
         menuBar.add(new JMenu("File"));
         menuBar.getMenu(0).add("New").addActionListener(e -> fileMenuNew());
         menuBar.getMenu(0).add("Open").addActionListener(e -> fileMenuOpen());
+        menuBar.getMenu(0).add("Open Folder").addActionListener(e -> fileMenuOpenFolder());
         menuBar.getMenu(0).add("Save").addActionListener(e -> fileMenuSave());
         menuBar.getMenu(0).add("Save As").addActionListener(e -> fileMenuSaveAs());
 
         menuBar.add(new JMenu("Settings"));
         menuBar.getMenu(1).add(new JCheckBoxMenuItem("Line Wrap")).addActionListener(e -> textArea.setLineWrap(!textArea.getLineWrap()));
-        menuBar.getMenu(1).add("---").addActionListener(e -> fileMenuOpen());
+        menuBar.getMenu(1).add(new JCheckBoxMenuItem("Toggle File Bar")).addActionListener(e -> SwingUtilities.invokeLater(this::toggleLeftSideBar));
         menuBar.getMenu(1).add("---").addActionListener(e -> fileMenuSave());
         menuBar.getMenu(1).add("---").addActionListener(e -> fileMenuSaveAs());
 
@@ -50,21 +57,31 @@ public class RTFrame extends JFrame {
         menuBar.getMenu(2).add(new JCheckBoxMenuItem("---"));
         menuBar.getMenu(2).add(new JCheckBoxMenuItem("---"));
 
-        // ----- initialise side bar -----
-        sideBarPanel = new JPanel();
-        sideBarPanel.setLayout(new BoxLayout(sideBarPanel, BoxLayout.Y_AXIS));
-        sideBar = new JScrollPane(sideBarPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        // ----- initialise left side bar -----
+        fileTree = new FileTree(new File(""));
+        leftSideBar = new JScrollPane(fileTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        leftSideBar.setPreferredSize(new Dimension(200, this.getHeight()));
+        leftSideBar.setVisible(false);
+
+        // ----- initialise right side bar -----
+        rightSideBarPanel = new JPanel();
+        rightSideBarPanel.setLayout(new BoxLayout(rightSideBarPanel, BoxLayout.Y_AXIS));
+        rightSideBar = new JScrollPane(rightSideBarPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         updateSideBar();
 
         // ----- initialize bottom bar -----
         bottomBar = new JPanel();
         infoLabel = new JLabel();
+        saveLabel = new JLabel();
         bottomBar.add(infoLabel);
         bottomBar.add(new ZoomControl(textArea));
+        updateSaveLabel(false);
+        bottomBar.add(saveLabel);
         //bottomBar.setPreferredSize(new Dimension(this.getWidth(), 30));
 
         // ----- add elements -----
-        this.add(sideBar, BorderLayout.EAST);
+        this.add(leftSideBar, BorderLayout.WEST);
+        this.add(rightSideBar, BorderLayout.EAST);
         this.add(scrollPane);
         this.add(menuBar, BorderLayout.NORTH);
         this.add(bottomBar, BorderLayout.SOUTH);
@@ -76,15 +93,21 @@ public class RTFrame extends JFrame {
 
     }
 
+    private void toggleLeftSideBar() {
+        leftSideBar.setVisible(!leftSideBar.isVisible());
+        this.revalidate();
+        this.repaint();
+    }
+
     private void updateSideBar() {
-        sideBarPanel.removeAll();
+        rightSideBarPanel.removeAll();
         for (JComponent sideBarComponent : sideBarComponents) {
-            sideBarPanel.add(sideBarComponent);
+            rightSideBarPanel.add(sideBarComponent);
         }
         if (!sideBarComponents.isEmpty()) {
-            sideBar.setPreferredSize(new Dimension(200, this.getHeight()));
+            rightSideBar.setPreferredSize(new Dimension(200, this.getHeight()));
         } else {
-            sideBar.setPreferredSize(new Dimension(0, 0));
+            rightSideBar.setPreferredSize(new Dimension(0, 0));
         }
         this.revalidate();
 
@@ -93,6 +116,14 @@ public class RTFrame extends JFrame {
     public void fileMenuNew() {
         textArea.setText("");
         currentPath = null;
+        updateSaveLabel(false);
+    }
+    public void fileMenuOpenFolder() {
+        JFileChooser fc = new JFileChooser();
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setAcceptAllFileFilterUsed(false);
+        fc.showDialog(this, "Open Folder");
+        fileTree.setModel(FileTree.createTreeModel(fc.getSelectedFile()));
     }
 
     public void fileMenuOpen() {
@@ -103,6 +134,7 @@ public class RTFrame extends JFrame {
             textArea.read(fr, "");
             this.setTitle(fc.getSelectedFile().getName());
             currentPath = fc.getSelectedFile().getAbsolutePath();
+            updateSaveLabel(false);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -115,6 +147,7 @@ public class RTFrame extends JFrame {
         File file = new File(currentPath);
         try (FileWriter fw = new FileWriter(file)) {
             textArea.write(fw);
+            updateSaveLabel(true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -171,6 +204,14 @@ public class RTFrame extends JFrame {
     private void updateInfoLabel() {
         int wordCount = textArea.getText().trim().split("\\s+").length;
         infoLabel.setText(textArea.getLineCount() + " Lines    " + wordCount + " Words");
+    }
+
+    private void updateSaveLabel(Boolean wasSaved) {
+        if (wasSaved) {
+            saveLabel.setText("Last Saved: " + LocalTime.now().format(DateTimeFormatter.ofPattern("H:mm:ss")));
+        } else {
+            saveLabel.setText("~ not saved");
+        }
     }
 
 }
