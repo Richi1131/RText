@@ -3,19 +3,49 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.Arrays;
 
 public class FileTree extends JTree {
     public FileTree(RTFrame frame, File root) {
         super(createTreeModel(root));
-        this.addTreeSelectionListener(e -> {
-            TreePath path = e.getPath();
-            if (path.getLastPathComponent() instanceof DefaultMutableTreeNode node)
-                if (node.getUserObject() instanceof File file) {
-                    frame.loadFile(file);
-                }
-        });
+        this.addMouseListener(new MouseListener() {
+                                  @Override
+                                  public void mouseClicked(MouseEvent e) {
+                                      if (e.getClickCount() != 2) {
+                                          return;
+                                      }
+                                      TreePath path = FileTree.this.getPathForLocation(e.getX(), e.getY());
+                                      if (path.getLastPathComponent() instanceof DefaultMutableTreeNode node) {
+                                          if (node.getUserObject() instanceof File file) {
+                                              frame.loadFile(file);
+                                          }
+                                      }
+                                  }
+
+                                  @Override
+                                  public void mousePressed(MouseEvent e) {
+
+                                  }
+
+                                  @Override
+                                  public void mouseReleased(MouseEvent e) {
+
+                                  }
+
+                                  @Override
+                                  public void mouseEntered(MouseEvent e) {
+
+                                  }
+
+                                  @Override
+                                  public void mouseExited(MouseEvent e) {
+
+                                  }
+                              }
+        );
     }
     public static TreeModel createTreeModel(File root) {
         RFile rRoot = new RFile(root);
@@ -25,7 +55,6 @@ public class FileTree extends JTree {
     }
     private static void addChildren(DefaultMutableTreeNode node, RFile file) {
         RFile[] files = Arrays.stream(file.listFiles()).map(RFile::new).toArray(RFile[]::new);
-        if (files == null) return;
 
         for (RFile child : files) {
             DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(child);
